@@ -133,7 +133,22 @@ schema means a single DB table, a single ingest endpoint, and a single deduplica
 `zone_id` is non-null for zone events. The tradeoff is that the schema is more permissive,
 but the validator catches violations at ingest time, not at query time.
 
-### 3. Per-event validation in ingest endpoint
+### 3. POS transaction correlation for conversion rate
+
+The problem spec defines a converted visitor as one who was in the billing zone
+in the 5-minute window before a POS transaction timestamp. The original
+implementation used `BILLING_QUEUE_JOIN minus ABANDON` as a proxy, which is an
+approximation. I updated `funnel.py` and `anomalies.py` to load
+`pos_transactions.csv`, and for each billing visitor check whether their
+`BILLING_QUEUE_JOIN` timestamp falls within 300 seconds before any POS
+transaction for the same store. When the CSV is present, the POS-correlated
+count is used; when absent (e.g. in test environments), the no-abandon proxy
+is used as a fallback. The funnel response includes a `pos_correlated: true/false`
+field so callers know which method was used. Claude initially did not flag this
+gap — I identified it by reading the problem spec's conversion definition
+carefully and comparing it against the implementation.
+
+### 4. Per-event validation in ingest endpoint
 
 The ingest endpoint originally used Pydantic's `EventBatch` model to validate all events
 at once. Claude's initial suggestion used batch-level validation, which meant one malformed

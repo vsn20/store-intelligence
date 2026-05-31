@@ -95,11 +95,10 @@ def main():
     for d in detections:
         tracks[d["track_id"]].append(d)
 
-    # For billing: compute real queue depth per timestamp
-    # queue_depth = number of unique track_ids active at same time window
+    # Build timeline of active tracks — always computed so billing block
+    # can safely reference active_times regardless of iteration order.
+    active_times = {}
     if camera_role == "billing":
-        # Build timeline of active tracks
-        active_times = {}
         for tid, dets in tracks.items():
             dets.sort(key=lambda d: d["timestamp"])
             active_times[tid] = (dets[0]["timestamp"], dets[-1]["timestamp"])

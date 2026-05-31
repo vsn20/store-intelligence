@@ -190,3 +190,55 @@ what is and is not tested.
 **What would make me change this**: If I added OSNet Re-ID to the pipeline (the correct
 production approach), I would replace Option C with a full end-to-end test that injects
 appearance embeddings and verifies the `visitor_id` mapping across two track IDs.
+---
+
+## Decision 5: POS Transaction Correlation for Conversion Rate
+
+### The Problem
+
+The problem spec defines conversion as: *"A visitor who was in the billing zone
+in the 5-minute window before a transaction timestamp counts as a converted
+visitor for that session."* The original implementation used
+`BILLING_QUEUE_JOIN minus BILLING_QUEUE_ABANDON` as a proxy for purchase,
+which does not use the actual POS data at all.
+
+### Options Considered
+
+**Option A — No-abandon proxy**: `BILLING_QUEUE_JOIN` without a subsequent
+`BILLING_QUEUE_ABANDON` = purchased. Simple, no file I/O, works in tests.
+Problem: over-counts — a visitor who joined the queue and left without
+explicitly abandoning (camera lost them) is incorrectly counted as converted.
+
+**Option B — POS correlation per spec**: Load `pos_transactions.csv`, for each
+billing visitor check if their `BILLING_QUEUE_JOIN` timestamp falls within 300
+seconds before any POS transaction in the same store. This is exactly what the
+spec requires.
+
+**Option C — Hybrid with fallback**: Use POS correlation when the CSV exists,
+fall back to Option A when it doesn't (e.g. test environments without the CSV).
+
+### What AI Suggested
+
+Claude did not flag this gap in the original implementation — it accepted the
+no-abandon proxy without comparing it to the spec's explicit definition. I
+identified the mismatch by re-reading the spec's conversion definition and
+comparing it to the code's purchase proxy logic.
+
+### What I Chose and Why
+
+Option C: the hybrid approach. `load_pos_transactions()` and
+`correlate_purchases_with_pos()` are implemented in `funnel.py` and reused
+in `anomalies.py`. When the CSV is present, POS correlation is used. When
+absent, the no-abandon proxy is the fallback so tests continue to work without
+needing a CSV fixture.
+
+The funnel response includes `"pos_correlated": true/false` so callers know
+which method produced the conversion count. This is important for operational
+transparency — an on-call engineer seeing a conversion rate anomaly should know
+whether it is based on actual POS data or an approximation.
+
+**Trade-off**: POS correlation requires the CSV to be mounted at a known path
+(`POS_CSV_PATH` env var, default `/app/data/pos_transactions.csv`). If the CSV
+is not mounted, the API silently falls back to the proxy. This is documented in
+the README. A production deployment would use a database-backed POS feed instead
+of a CSV file.

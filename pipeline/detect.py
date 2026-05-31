@@ -28,9 +28,15 @@ def main():
     if not cap.isOpened():
         raise RuntimeError(f"Cannot open video: {args.video}")
 
-    fps        = cap.get(cv2.CAP_PROP_FPS) or 15.0
+    fps          = cap.get(cv2.CAP_PROP_FPS) or 15.0
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(f"[detect] {args.camera_id} | fps={fps:.1f} | total_frames={total_frames}")
+
+    if total_frames == 0:
+        print(f"[detect] WARNING: video reports 0 frames — may be corrupt: {args.video}")
+        cap.release()
+        open(args.output, "w").close()
+        return
 
     frame_num  = 0
     written    = 0
