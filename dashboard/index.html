@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Retail — Store Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c0f;
+    --surface:   #111318;
+    --border:    #1e2229;
+    --border2:   #2a2f3a;
+    --text:      #c8cdd8;
+    --dim:       #5a6070;
+    --accent:    #00e5a0;
+    --warn:      #f5a623;
+    --danger:    #ff4757;
+    --info:      #3d9cf5;
+    --pulse:     rgba(0,229,160,0.15);
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .logo span { color: var(--dim); font-weight: 300; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 var(--pulse);
+    animation: ping 2s infinite;
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  .live-dot.stale { background: var(--warn); animation: none; }
+  .live-dot.error { background: var(--danger); animation: none; }
+
+  @keyframes ping {
+    0%   { box-shadow: 0 0 0 0 rgba(0,229,160,0.4); }
+    70%  { box-shadow: 0 0 0 8px rgba(0,229,160,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,229,160,0); }
+  }
+
+  #last-update { color: var(--dim); font-family: var(--font-mono); font-size: 11px; }
+
+  /* ── Store selector ── */
+  .controls {
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .controls label { font-family: var(--font-mono); font-size: 11px; color: var(--dim); letter-spacing: 0.08em; }
+
+  .controls input, .controls select {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .controls input:focus, .controls select:focus { border-color: var(--accent); }
+  .controls input { width: 220px; }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 7px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00ffb3; }
+  .btn-ghost { background: transparent; color: var(--dim); border: 1px solid var(--border2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Main grid ── */
+  main { padding: 28px 32px; display: grid; gap: 20px; }
+
+  /* ── KPI row ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi:hover { border-color: var(--border2); }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  .kpi.warn::before  { background: var(--warn); }
+  .kpi.danger::before { background: var(--danger); }
+  .kpi.info::before  { background: var(--info); }
+
+  .kpi-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+    transition: all 0.4s;
+  }
+
+  .kpi.warn .kpi-value  { color: var(--warn); }
+  .kpi.danger .kpi-value { color: var(--danger); }
+  .kpi.info .kpi-value  { color: var(--info); }
+
+  .kpi-sub {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  /* ── Two-column layout ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .panel-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(0,229,160,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,160,0.2);
+  }
+
+  .panel-body { padding: 20px; }
+
+  /* ── Funnel ── */
+  .funnel-stage {
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: 110px 1fr 60px;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .funnel-label { font-family: var(--font-mono); font-size: 11px; color: var(--text); }
+
+  .funnel-bar-bg {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .funnel-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .funnel-bar.s1 { background: var(--accent); }
+  .funnel-bar.s2 { background: var(--info); }
+  .funnel-bar.s3 { background: var(--warn); }
+  .funnel-bar.s4 { background: #a855f7; }
+
+  .funnel-count { font-family: var(--font-mono); font-size: 11px; color: var(--text); text-align: right; }
+  .funnel-drop  { font-family: var(--font-mono); font-size: 10px; color: var(--danger); }
+
+  /* ── Heatmap ── */
+  .heat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .heat-zone { font-family: var(--font-mono); font-size: 11px; color: var(--text); width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .heat-bar-bg {
+    flex: 1;
+    height: 20px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .heat-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .heat-dwell { font-family: var(--font-mono); font-size: 10px; color: var(--dim); width: 55px; text-align: right; }
+
+  /* ── Anomalies ── */
+  .anomaly {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border: 1px solid;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+
+  .anomaly.INFO     { background: rgba(61,156,245,0.07);  border-color: rgba(61,156,245,0.2); }
+  .anomaly.WARN     { background: rgba(245,166,35,0.07);  border-color: rgba(245,166,35,0.2); }
+  .anomaly.CRITICAL { background: rgba(255,71,87,0.07);   border-color: rgba(255,71,87,0.3); }
+
+  .anomaly-sev {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    height: fit-content;
+    white-space: nowrap;
+  }
+
+  .anomaly.INFO .anomaly-sev     { background: rgba(61,156,245,0.15); color: var(--info); }
+  .anomaly.WARN .anomaly-sev     { background: rgba(245,166,35,0.15); color: var(--warn); }
+  .anomaly.CRITICAL .anomaly-sev { background: rgba(255,71,87,0.15);  color: var(--danger); }
+
+  .anomaly-desc    { font-size: 12px; color: var(--text); margin-bottom: 4px; }
+  .anomaly-action  { font-size: 11px; color: var(--dim); font-family: var(--font-mono); }
+
+  .no-anomalies {
+    text-align: center;
+    padding: 30px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--dim);
+  }
+
+  .no-anomalies::before { content: '✓ '; color: var(--accent); }
+
+  /* ── Event log ── */
+  .event-log {
+    height: 220px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.8;
+  }
+
+  .event-log::-webkit-scrollbar { width: 4px; }
+  .event-log::-webkit-scrollbar-track { background: var(--border); }
+  .event-log::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .log-line { display: flex; gap: 10px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .log-time  { color: var(--dim); white-space: nowrap; }
+  .log-type  { color: var(--accent); width: 80px; flex-shrink: 0; }
+  .log-msg   { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .log-type.EXIT    { color: var(--warn); }
+  .log-type.BILLING { color: var(--info); }
+  .log-type.ABANDON { color: var(--danger); }
+  .log-type.REENTRY { color: #a855f7; }
+
+  /* ── Loading / Error ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, var(--border2) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    height: 32px;
+  }
+
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  .error-banner {
+    background: rgba(255,71,87,0.08);
+    border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--danger);
+    display: none;
+  }
+
+  /* ── Health bar ── */
+  .health-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .health-row:last-child { border-bottom: none; }
+  .health-store { font-family: var(--font-mono); font-size: 11px; }
+  .health-ts    { font-family: var(--font-mono); font-size: 10px; color: var(--dim); }
+
+  .health-pill {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+
+  .pill-live  { background: rgba(0,229,160,0.12); color: var(--accent); }
+  .pill-stale { background: rgba(245,166,35,0.12); color: var(--warn); }
+
+  /* ── Refresh ticker ── */
+  .refresh-ring {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0%, var(--border) 0%);
+    transition: background 0.5s linear;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .refresh-ring-inner {
+    width: 24px; height: 24px;
+    background: var(--surface);
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Apex Retail <span>/ Store Intelligence</span></div>
+  <div class="status-bar">
+    <span><span class="live-dot" id="live-dot"></span><span id="feed-status">CONNECTING</span></span>
+    <span id="last-update">--</span>
+    <div class="refresh-ring" id="refresh-ring"><div class="refresh-ring-inner"></div></div>
+  </div>
+</header>
+
+<div class="controls">
+  <label>API URL</label>
+  <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+  <label>Store ID</label>
+  <input type="text" id="store-id" value="ST1008" style="width:120px">
+  <label>Date</label>
+  <input type="date" id="query-date" style="width:150px">
+  <button class="btn btn-primary" onclick="forceRefresh()">REFRESH</button>
+  <button class="btn btn-ghost" id="auto-btn" onclick="toggleAuto()">AUTO: ON</button>
+</div>
+
+<div id="error-banner" class="error-banner" style="margin:16px 32px;"></div>
+
+<main>
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi" id="kpi-visitors">
+      <div class="kpi-label">Unique Visitors</div>
+      <div class="kpi-value" id="val-visitors">—</div>
+      <div class="kpi-sub">today</div>
+    </div>
+    <div class="kpi info" id="kpi-conversion">
+      <div class="kpi-label">Conversion Rate</div>
+      <div class="kpi-value" id="val-conversion">—</div>
+      <div class="kpi-sub">visitors → purchase</div>
+    </div>
+    <div class="kpi" id="kpi-queue">
+      <div class="kpi-label">Queue Depth</div>
+      <div class="kpi-value" id="val-queue">—</div>
+      <div class="kpi-sub">billing counter</div>
+    </div>
+    <div class="kpi warn" id="kpi-abandon">
+      <div class="kpi-label">Abandonment</div>
+      <div class="kpi-value" id="val-abandon">—</div>
+      <div class="kpi-sub">billing drop-off</div>
+    </div>
+    <div class="kpi" id="kpi-anomalies">
+      <div class="kpi-label">Active Alerts</div>
+      <div class="kpi-value" id="val-anomalies">—</div>
+      <div class="kpi-sub">anomalies</div>
+    </div>
+  </div>
+
+  <!-- Funnel + Anomalies -->
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Conversion Funnel</span>
+        <span class="panel-badge" id="funnel-date">today</span>
+      </div>
+      <div class="panel-body" id="funnel-body">
+        <div class="skeleton" style="margin-bottom:12px"></div>
+        <div class="skeleton" style="margin-bottom:12px"></div>
+        <div class="skeleton" style="margin-bottom:12px"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Active Anomalies</span>
+        <span class="panel-badge" id="anomaly-count">0</span>
+      </div>
+      <div class="panel-body" id="anomaly-body">
+        <div class="skeleton" style="margin-bottom:10px"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heatmap + Health + Log -->
+  <div class="three-col">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Zone Heatmap</span>
+        <span class="panel-badge">dwell avg</span>
+      </div>
+      <div class="panel-body" id="heatmap-body">
+        <div class="skeleton" style="margin-bottom:10px;height:20px"></div>
+        <div class="skeleton" style="margin-bottom:10px;height:20px"></div>
+        <div class="skeleton" style="height:20px"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Feed Health</span>
+      </div>
+      <div class="panel-body" id="health-body">
+        <div class="skeleton"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Event Log</span>
+        <span class="panel-badge" id="log-count">0 events</span>
+      </div>
+      <div class="panel-body" style="padding:12px">
+        <div class="event-log" id="event-log">
+          <div class="log-line"><span class="log-time">--:--:--</span><span class="log-type">SYSTEM</span><span class="log-msg">Waiting for API...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let autoRefresh = true;
+let refreshInterval = null;
+const INTERVAL_MS = 5000;
+let tickProgress = 0;
+let tickTimer = null;
+let logLines = [];
+let totalEvents = 0;
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+ const today = '2026-04-10';
+document.getElementById('query-date').value = today;
+  forceRefresh();
+  startAutoRefresh();
+});
+
+function apiBase()  { return document.getElementById('api-url').value.replace(/\/$/, ''); }
+function storeId()  { return document.getElementById('store-id').value.trim() || 'ST1008'; }
+function queryDate(){ return document.getElementById('query-date').value; }
+
+// ── Auto refresh ───────────────────────────────────────────────────────────
+function startAutoRefresh() {
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(forceRefresh, INTERVAL_MS);
+  startTicker();
+}
+
+function startTicker() {
+  if (tickTimer) clearInterval(tickTimer);
+  tickProgress = 0;
+  tickTimer = setInterval(() => {
+    tickProgress = Math.min(tickProgress + (100 / (INTERVAL_MS / 100)), 100);
+    const ring = document.getElementById('refresh-ring');
+    ring.style.background = `conic-gradient(var(--accent) ${tickProgress}%, var(--border) ${tickProgress}%)`;
+    if (tickProgress >= 100) tickProgress = 0;
+  }, 100);
+}
+
+function toggleAuto() {
+  autoRefresh = !autoRefresh;
+  document.getElementById('auto-btn').textContent = `AUTO: ${autoRefresh ? 'ON' : 'OFF'}`;
+  if (autoRefresh) { startAutoRefresh(); }
+  else { clearInterval(refreshInterval); clearInterval(tickTimer); }
+}
+
+// ── Main refresh ───────────────────────────────────────────────────────────
+async function forceRefresh() {
+  if (autoRefresh) startTicker();
+  await Promise.all([
+    fetchMetrics(),
+    fetchFunnel(),
+    fetchAnomalies(),
+    fetchHeatmap(),
+    fetchHealth(),
+  ]);
+  document.getElementById('last-update').textContent =
+    'Updated ' + new Date().toLocaleTimeString();
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.style.display = 'block';
+  el.textContent = '⚠ ' + msg;
+  setFeedStatus('ERROR');
+}
+
+function clearError() {
+  document.getElementById('error-banner').style.display = 'none';
+}
+
+function setFeedStatus(status) {
+  const dot = document.getElementById('live-dot');
+  const lbl = document.getElementById('feed-status');
+  dot.className = 'live-dot';
+  if (status === 'LIVE')  { lbl.textContent = 'LIVE'; }
+  else if (status === 'STALE') { dot.className = 'live-dot stale'; lbl.textContent = 'STALE'; }
+  else if (status === 'ERROR') { dot.className = 'live-dot error'; lbl.textContent = 'ERROR'; }
+  else { lbl.textContent = status; }
+}
+
+// ── Fetch helpers ──────────────────────────────────────────────────────────
+async function get(path) {
+  const r = await fetch(apiBase() + path);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ── Metrics ────────────────────────────────────────────────────────────────
+async function fetchMetrics() {
+  try {
+    const d = await get(`/stores/${storeId()}/metrics?date=${queryDate()}`);
+    clearError();
+
+    setText('val-visitors',   d.unique_visitors);
+    setText('val-conversion', (d.conversion_rate * 100).toFixed(1) + '%');
+    setText('val-queue',      d.current_queue_depth);
+    setText('val-abandon',    (d.abandonment_rate * 100).toFixed(1) + '%');
+
+    // colour queue KPI
+    const qk = document.getElementById('kpi-queue');
+    qk.className = d.current_queue_depth > 5 ? 'kpi danger' : d.current_queue_depth > 2 ? 'kpi warn' : 'kpi';
+
+    addLog('METRICS', `visitors=${d.unique_visitors} conv=${(d.conversion_rate*100).toFixed(1)}% queue=${d.current_queue_depth}`);
+    setFeedStatus('LIVE');
+  } catch(e) {
+    showError(`Metrics: ${e.message}`);
+  }
+}
+
+// ── Funnel ─────────────────────────────────────────────────────────────────
+async function fetchFunnel() {
+  try {
+    const d = await get(`/stores/${storeId()}/funnel?date=${queryDate()}`);
+    const max = d.funnel[0]?.visitors || 1;
+    const colors = ['s1','s2','s3','s4'];
+    document.getElementById('funnel-date').textContent = queryDate();
+    document.getElementById('funnel-body').innerHTML = d.funnel.map((s, i) => `
+      <div class="funnel-stage">
+        <div class="funnel-label">${s.stage}</div>
+        <div class="funnel-bar-bg">
+          <div class="funnel-bar ${colors[i]}" style="width:${max > 0 ? (s.visitors/max*100) : 0}%"></div>
+        </div>
+        <div>
+          <div class="funnel-count">${s.visitors}</div>
+          ${i > 0 && s.dropoff_pct > 0 ? `<div class="funnel-drop">-${s.dropoff_pct}%</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) { /* non-critical */ }
+}
+
+// ── Anomalies ──────────────────────────────────────────────────────────────
+async function fetchAnomalies() {
+  try {
+    const d = await get(`/stores/${storeId()}/anomalies`);
+    const list = d.anomalies || [];
+    document.getElementById('anomaly-count').textContent = list.length;
+    document.getElementById('val-anomalies').textContent = list.length;
+
+    const kpi = document.getElementById('kpi-anomalies');
+    const crit = list.some(a => a.severity === 'CRITICAL');
+    const warn = list.some(a => a.severity === 'WARN');
+    kpi.className = crit ? 'kpi danger' : warn ? 'kpi warn' : 'kpi';
+
+    if (list.length === 0) {
+      document.getElementById('anomaly-body').innerHTML = '<div class="no-anomalies">All systems normal</div>';
+    } else {
+      document.getElementById('anomaly-body').innerHTML = list.map(a => `
+        <div class="anomaly ${a.severity}">
+          <span class="anomaly-sev">${a.severity}</span>
+          <div>
+            <div class="anomaly-desc">${a.description}</div>
+            <div class="anomaly-action">→ ${a.suggested_action}</div>
+          </div>
+        </div>
+      `).join('');
+      if (crit) addLog('ALERT', list.find(a=>a.severity==='CRITICAL').type, 'danger');
+    }
+  } catch(e) { /* non-critical */ }
+}
+
+// ── Heatmap ────────────────────────────────────────────────────────────────
+async function fetchHeatmap() {
+  try {
+    const d = await get(`/stores/${storeId()}/heatmap`);
+    const zones = (d.zones || []).sort((a,b) => b.score - a.score);
+
+    if (zones.length === 0) {
+      document.getElementById('heatmap-body').innerHTML = '<div class="no-anomalies" style="color:var(--dim)">No zone data yet</div>';
+      return;
+    }
+
+    document.getElementById('heatmap-body').innerHTML = zones.map(z => {
+      const hue = Math.round(120 - z.score * 1.2); // green→red
+      const color = `hsl(${hue}, 70%, 50%)`;
+      const dwell = z.avg_dwell_ms ? `${(z.avg_dwell_ms/1000).toFixed(0)}s` : '0s';
+      return `
+        <div class="heat-row">
+          <div class="heat-zone">${z.zone_id}</div>
+          <div class="heat-bar-bg">
+            <div class="heat-bar" style="width:${z.score}%;background:${color}"></div>
+          </div>
+          <div class="heat-dwell">${dwell} avg</div>
+        </div>
+      `;
+    }).join('');
+  } catch(e) { /* non-critical */ }
+}
+
+// ── Health ─────────────────────────────────────────────────────────────────
+async function fetchHealth() {
+  try {
+    const d = await get('/health');
+    const stale = new Set(d.stale_feeds || []);
+    const stores = Object.entries(d.last_event_per_store || {});
+
+    if (stores.length === 0) {
+      document.getElementById('health-body').innerHTML = '<div class="no-anomalies" style="color:var(--dim)">No stores connected</div>';
+      return;
+    }
+
+    document.getElementById('health-body').innerHTML = stores.map(([sid, ts]) => {
+      const isStale = stale.has(sid);
+      const tsStr = ts ? new Date(ts).toLocaleTimeString() : 'never';
+      return `
+        <div class="health-row">
+          <div>
+            <div class="health-store">${sid}</div>
+            <div class="health-ts">last event: ${tsStr}</div>
+          </div>
+          <span class="health-pill ${isStale ? 'pill-stale' : 'pill-live'}">${isStale ? 'STALE' : 'LIVE'}</span>
+        </div>
+      `;
+    }).join('');
+
+    const hasStale = stale.size > 0;
+    if (!hasStale) setFeedStatus('LIVE');
+    else setFeedStatus('STALE');
+  } catch(e) { /* non-critical */ }
+}
+
+// ── Event log ──────────────────────────────────────────────────────────────
+function addLog(type, msg) {
+  totalEvents++;
+  document.getElementById('log-count').textContent = `${totalEvents} events`;
+  const now = new Date().toLocaleTimeString();
+  const typeClass = type.includes('EXIT') ? 'EXIT' : type.includes('BILLING') ? 'BILLING' : type.includes('ABANDON') ? 'ABANDON' : type.includes('REENTRY') ? 'REENTRY' : '';
+  logLines.unshift({ time: now, type, msg, cls: typeClass });
+  if (logLines.length > 50) logLines.pop();
+  document.getElementById('event-log').innerHTML = logLines.map(l => `
+    <div class="log-line">
+      <span class="log-time">${l.time}</span>
+      <span class="log-type ${l.cls}">${l.type.slice(0,10)}</span>
+      <span class="log-msg">${l.msg}</span>
+    </div>
+  `).join('');
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el && el.textContent !== String(val)) {
+    el.style.transform = 'scale(1.05)';
+    el.textContent = val;
+    setTimeout(() => el.style.transform = '', 300);
+  }
+}
+</script>
+</body>
+</html>
