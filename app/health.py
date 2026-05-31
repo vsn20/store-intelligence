@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
@@ -20,19 +21,32 @@ def health(db: Session = Depends(get_db)):
             .all()
         )
     except Exception as e:
-        return {"status": "degraded", "error": str(e)}, 503
+        # Return proper 503 — FastAPI does NOT support Flask-style tuple returns.
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "degraded",
+                "error": "database_unavailable",
+                "detail": str(e),
+            },
+        )
 
     last_event_per_store = {}
     stale_feeds          = []
 
     for store_id, last_ts in rows:
         last_event_per_store[store_id] = last_ts.isoformat() if last_ts else None
-        if last_ts is None or last_ts.replace(tzinfo=timezone.utc) < stale_threshold:
+        # Ensure tz-aware comparison
+        if last_ts is None:
             stale_feeds.append(store_id)
+        else:
+            ts_aware = last_ts if last_ts.tzinfo else last_ts.replace(tzinfo=timezone.utc)
+            if ts_aware < stale_threshold:
+                stale_feeds.append(store_id)
 
     return {
-        "status":              "ok",
+        "status":               "ok",
         "last_event_per_store": last_event_per_store,
-        "stale_feeds":         stale_feeds,
-        "checked_at":          now.isoformat(),
+        "stale_feeds":          stale_feeds,
+        "checked_at":           now.isoformat(),
     }
