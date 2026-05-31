@@ -1,0 +1,7 @@
+data/clips/
+output/
+pipeline/yolov8m.pt
+*.pyc
+__pycache__/
+test.db
+.env

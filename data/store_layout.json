@@ -1,0 +1,24 @@
+{
+  "store_id": "ST1008",
+  "store_name": "Brigade_Bangalore",
+  "open_hours": {"open": "10:00", "close": "22:00"},
+  "cameras": {
+    "CAM 1": "entry_exit",
+    "CAM 2": "main_floor",
+    "CAM 3": "billing",
+    "CAM 4": "floor_secondary",
+    "CAM 5": "floor_secondary"
+  },
+  "zones": [
+    {"zone_id": "MAYBELLINE",    "sku_zone": "makeup",      "camera": "CAM 2", "bbox_pct": [0.0,  0.0,  0.25, 0.4]},
+    {"zone_id": "LAKME",         "sku_zone": "makeup",      "camera": "CAM 2", "bbox_pct": [0.25, 0.0,  0.5,  0.4]},
+    {"zone_id": "LOREAL",        "sku_zone": "makeup",      "camera": "CAM 2", "bbox_pct": [0.5,  0.0,  0.75, 0.4]},
+    {"zone_id": "FACES",         "sku_zone": "makeup",      "camera": "CAM 2", "bbox_pct": [0.75, 0.0,  1.0,  0.4]},
+    {"zone_id": "MINIMALIST",    "sku_zone": "skin",        "camera": "CAM 2", "bbox_pct": [0.0,  0.4,  0.33, 0.7]},
+    {"zone_id": "AQUALOGICA",    "sku_zone": "skin",        "camera": "CAM 2", "bbox_pct": [0.33, 0.4,  0.66, 0.7]},
+    {"zone_id": "DERMdoc",       "sku_zone": "skin",        "camera": "CAM 2", "bbox_pct": [0.66, 0.4,  1.0,  0.7]},
+    {"zone_id": "ACCESSORIES",   "sku_zone": "accessories", "camera": "CAM 4", "bbox_pct": [0.0,  0.0,  0.5,  1.0]},
+    {"zone_id": "MENS_CARE",     "sku_zone": "personal-care","camera": "CAM 5","bbox_pct": [0.0,  0.0,  0.5,  1.0]},
+    {"zone_id": "BILLING",       "sku_zone": "billing",     "camera": "CAM 3", "bbox_pct": [0.0,  0.0,  1.0,  1.0]}
+  ]
+}
