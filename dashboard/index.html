@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apex Retail — Store Intelligence</title>
+<title>Apex Retail â€” Store Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +34,7 @@
     line-height: 1.5;
   }
 
-  /* ── Header ── */
+  /* â”€â”€ Header â”€â”€ */
   header {
     display: flex;
     align-items: center;
@@ -88,7 +88,7 @@
 
   #last-update { color: var(--dim); font-family: var(--font-mono); font-size: 11px; }
 
-  /* ── Store selector ── */
+  /* â”€â”€ Store selector â”€â”€ */
   .controls {
     padding: 16px 32px;
     border-bottom: 1px solid var(--border);
@@ -132,10 +132,10 @@
   .btn-ghost { background: transparent; color: var(--dim); border: 1px solid var(--border2); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ── Main grid ── */
+  /* â”€â”€ Main grid â”€â”€ */
   main { padding: 28px 32px; display: grid; gap: 20px; }
 
-  /* ── KPI row ── */
+  /* â”€â”€ KPI row â”€â”€ */
   .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
 
   .kpi {
@@ -193,11 +193,11 @@
     color: var(--dim);
   }
 
-  /* ── Two-column layout ── */
+  /* â”€â”€ Two-column layout â”€â”€ */
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-  /* ── Panel ── */
+  /* â”€â”€ Panel â”€â”€ */
   .panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -234,7 +234,7 @@
 
   .panel-body { padding: 20px; }
 
-  /* ── Funnel ── */
+  /* â”€â”€ Funnel â”€â”€ */
   .funnel-stage {
     margin-bottom: 14px;
     display: grid;
@@ -267,7 +267,7 @@
   .funnel-count { font-family: var(--font-mono); font-size: 11px; color: var(--text); text-align: right; }
   .funnel-drop  { font-family: var(--font-mono); font-size: 10px; color: var(--danger); }
 
-  /* ── Heatmap ── */
+  /* â”€â”€ Heatmap â”€â”€ */
   .heat-row {
     display: flex;
     align-items: center;
@@ -294,7 +294,7 @@
 
   .heat-dwell { font-family: var(--font-mono); font-size: 10px; color: var(--dim); width: 55px; text-align: right; }
 
-  /* ── Anomalies ── */
+  /* â”€â”€ Anomalies â”€â”€ */
   .anomaly {
     display: flex;
     gap: 12px;
@@ -337,9 +337,9 @@
     color: var(--dim);
   }
 
-  .no-anomalies::before { content: '✓ '; color: var(--accent); }
+  .no-anomalies::before { content: 'âœ“ '; color: var(--accent); }
 
-  /* ── Event log ── */
+  /* â”€â”€ Event log â”€â”€ */
   .event-log {
     height: 220px;
     overflow-y: auto;
@@ -362,7 +362,7 @@
   .log-type.ABANDON { color: var(--danger); }
   .log-type.REENTRY { color: #a855f7; }
 
-  /* ── Loading / Error ── */
+  /* â”€â”€ Loading / Error â”€â”€ */
   .skeleton {
     background: linear-gradient(90deg, var(--border) 25%, var(--border2) 50%, var(--border) 75%);
     background-size: 200% 100%;
@@ -384,7 +384,7 @@
     display: none;
   }
 
-  /* ── Health bar ── */
+  /* â”€â”€ Health bar â”€â”€ */
   .health-row {
     display: flex;
     align-items: center;
@@ -409,7 +409,7 @@
   .pill-live  { background: rgba(0,229,160,0.12); color: var(--accent); }
   .pill-stale { background: rgba(245,166,35,0.12); color: var(--warn); }
 
-  /* ── Refresh ticker ── */
+  /* â”€â”€ Refresh ticker â”€â”€ */
   .refresh-ring {
     width: 32px; height: 32px;
     border-radius: 50%;
@@ -440,7 +440,16 @@
 
 <div class="controls">
   <label>API URL</label>
-  <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+  <input type="text" id="api-url" value="" placeholder="http://localhost:8000">
+    <script>
+      // Auto-detect API URL: empty = same origin (works on HuggingFace and localhost)
+      document.addEventListener("DOMContentLoaded", function() {
+        var input = document.getElementById("api-url");
+        if (!input.value) {
+          input.value = window.location.origin === "null" ? "http://localhost:8000" : window.location.origin;
+        }
+      });
+    </script>
   <label>Store ID</label>
   <input type="text" id="store-id" value="ST1008" style="width:120px">
   <label>Date</label>
@@ -456,27 +465,27 @@
   <div class="kpi-row">
     <div class="kpi" id="kpi-visitors">
       <div class="kpi-label">Unique Visitors</div>
-      <div class="kpi-value" id="val-visitors">—</div>
+      <div class="kpi-value" id="val-visitors">â€”</div>
       <div class="kpi-sub">today</div>
     </div>
     <div class="kpi info" id="kpi-conversion">
       <div class="kpi-label">Conversion Rate</div>
-      <div class="kpi-value" id="val-conversion">—</div>
-      <div class="kpi-sub">visitors → purchase</div>
+      <div class="kpi-value" id="val-conversion">â€”</div>
+      <div class="kpi-sub">visitors â†’ purchase</div>
     </div>
     <div class="kpi" id="kpi-queue">
       <div class="kpi-label">Queue Depth</div>
-      <div class="kpi-value" id="val-queue">—</div>
+      <div class="kpi-value" id="val-queue">â€”</div>
       <div class="kpi-sub">billing counter</div>
     </div>
     <div class="kpi warn" id="kpi-abandon">
       <div class="kpi-label">Abandonment</div>
-      <div class="kpi-value" id="val-abandon">—</div>
+      <div class="kpi-value" id="val-abandon">â€”</div>
       <div class="kpi-sub">billing drop-off</div>
     </div>
     <div class="kpi" id="kpi-anomalies">
       <div class="kpi-label">Active Alerts</div>
-      <div class="kpi-value" id="val-anomalies">—</div>
+      <div class="kpi-value" id="val-anomalies">â€”</div>
       <div class="kpi-sub">anomalies</div>
     </div>
   </div>
@@ -546,7 +555,7 @@
 </main>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
+// â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let autoRefresh = true;
 let refreshInterval = null;
 const INTERVAL_MS = 5000;
@@ -555,7 +564,7 @@ let tickTimer = null;
 let logLines = [];
 let totalEvents = 0;
 
-// ── Init ───────────────────────────────────────────────────────────────────
+// â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.addEventListener('DOMContentLoaded', () => {
  const today = '2026-04-10';
 document.getElementById('query-date').value = today;
@@ -567,7 +576,7 @@ function apiBase()  { return document.getElementById('api-url').value.replace(/\
 function storeId()  { return document.getElementById('store-id').value.trim() || 'ST1008'; }
 function queryDate(){ return document.getElementById('query-date').value; }
 
-// ── Auto refresh ───────────────────────────────────────────────────────────
+// â”€â”€ Auto refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function startAutoRefresh() {
   if (refreshInterval) clearInterval(refreshInterval);
   refreshInterval = setInterval(forceRefresh, INTERVAL_MS);
@@ -592,7 +601,7 @@ function toggleAuto() {
   else { clearInterval(refreshInterval); clearInterval(tickTimer); }
 }
 
-// ── Main refresh ───────────────────────────────────────────────────────────
+// â”€â”€ Main refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function forceRefresh() {
   if (autoRefresh) startTicker();
   await Promise.all([
@@ -609,7 +618,7 @@ async function forceRefresh() {
 function showError(msg) {
   const el = document.getElementById('error-banner');
   el.style.display = 'block';
-  el.textContent = '⚠ ' + msg;
+  el.textContent = 'âš  ' + msg;
   setFeedStatus('ERROR');
 }
 
@@ -627,14 +636,14 @@ function setFeedStatus(status) {
   else { lbl.textContent = status; }
 }
 
-// ── Fetch helpers ──────────────────────────────────────────────────────────
+// â”€â”€ Fetch helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function get(path) {
   const r = await fetch(apiBase() + path);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 }
 
-// ── Metrics ────────────────────────────────────────────────────────────────
+// â”€â”€ Metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchMetrics() {
   try {
     const d = await get(`/stores/${storeId()}/metrics?date=${queryDate()}`);
@@ -656,7 +665,7 @@ async function fetchMetrics() {
   }
 }
 
-// ── Funnel ─────────────────────────────────────────────────────────────────
+// â”€â”€ Funnel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchFunnel() {
   try {
     const d = await get(`/stores/${storeId()}/funnel?date=${queryDate()}`);
@@ -678,7 +687,7 @@ async function fetchFunnel() {
   } catch(e) { /* non-critical */ }
 }
 
-// ── Anomalies ──────────────────────────────────────────────────────────────
+// â”€â”€ Anomalies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchAnomalies() {
   try {
     const d = await get(`/stores/${storeId()}/anomalies`);
@@ -699,7 +708,7 @@ async function fetchAnomalies() {
           <span class="anomaly-sev">${a.severity}</span>
           <div>
             <div class="anomaly-desc">${a.description}</div>
-            <div class="anomaly-action">→ ${a.suggested_action}</div>
+            <div class="anomaly-action">â†’ ${a.suggested_action}</div>
           </div>
         </div>
       `).join('');
@@ -708,7 +717,7 @@ async function fetchAnomalies() {
   } catch(e) { /* non-critical */ }
 }
 
-// ── Heatmap ────────────────────────────────────────────────────────────────
+// â”€â”€ Heatmap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchHeatmap() {
   try {
     const d = await get(`/stores/${storeId()}/heatmap`);
@@ -720,7 +729,7 @@ async function fetchHeatmap() {
     }
 
     document.getElementById('heatmap-body').innerHTML = zones.map(z => {
-      const hue = Math.round(120 - z.score * 1.2); // green→red
+      const hue = Math.round(120 - z.score * 1.2); // greenâ†’red
       const color = `hsl(${hue}, 70%, 50%)`;
       const dwell = z.avg_dwell_ms ? `${(z.avg_dwell_ms/1000).toFixed(0)}s` : '0s';
       return `
@@ -736,7 +745,7 @@ async function fetchHeatmap() {
   } catch(e) { /* non-critical */ }
 }
 
-// ── Health ─────────────────────────────────────────────────────────────────
+// â”€â”€ Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchHealth() {
   try {
     const d = await get('/health');
@@ -768,7 +777,7 @@ async function fetchHealth() {
   } catch(e) { /* non-critical */ }
 }
 
-// ── Event log ──────────────────────────────────────────────────────────────
+// â”€â”€ Event log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function addLog(type, msg) {
   totalEvents++;
   document.getElementById('log-count').textContent = `${totalEvents} events`;
