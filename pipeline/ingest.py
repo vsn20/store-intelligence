@@ -7,7 +7,7 @@ import requests
 from pathlib import Path
 
 EVENTS_FILE = "../output/events.jsonl"
-API_URL     = "http://localhost:8000/events/ingest"
+API_URL = "https://vsn20-store-intelligence.hf.space/events/ingest"
 BATCH_SIZE  = 250
 
 
