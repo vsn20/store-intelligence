@@ -1,7 +1,7 @@
-data/clips/
+﻿*.mp4
+*.avi
+*.mov
+*.jsonl
 output/
-pipeline/yolov8m.pt
-*.pyc
-__pycache__/
-test.db
-.env
+.coverage
+!data/pos_transactions.csv

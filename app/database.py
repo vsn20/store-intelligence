@@ -1,18 +1,27 @@
-import os
+﻿import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://purplle:purplle123@localhost:5432/store_intelligence")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./data/store_intelligence.db"
+)
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 class Base(DeclarativeBase):
     pass
 
+
 def init_db():
-    from app.models import EventORM  # noqa: F401 — import triggers table registration
+    os.makedirs("data", exist_ok=True)
+    from app.models import EventORM  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     db = SessionLocal()
