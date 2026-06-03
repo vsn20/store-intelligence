@@ -23,3 +23,5 @@ End-to-end CCTV analytics pipeline. From raw footage to live store metrics.
 
 ## Repository
 github.com/vsn20/store-intelligence
+
+##checking
