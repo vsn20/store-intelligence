@@ -1,14 +1,4 @@
-﻿---
-title: Store Intelligence API
-emoji: 📹
-colorFrom: blue
-colorTo: teal
-sdk: docker
-app_port: 7860
-pinned: false
----
-
-# Store Intelligence System — Purplle Tech Challenge 2026
+﻿# Store Intelligence System — Purplle Tech Challenge 2026
 
 End-to-end CCTV analytics pipeline. From raw footage to live store metrics.
 
