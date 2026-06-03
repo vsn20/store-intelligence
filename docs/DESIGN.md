@@ -15,32 +15,32 @@ analytics queries.
 
 ```
 CCTV Clips (.mp4)
-      â”‚
-      â–¼
+      │
+      ▼
 [Detection Layer]  detect.py
   YOLOv8m + ByteTrack
-  â†’ per-frame bounding boxes + track_ids
-      â”‚
-      â–¼
+  → per-frame bounding boxes + track_ids
+      │
+      ▼
 [Tracking Layer]  tracker.py
   Direction inference (entry/exit)
   Zone mapping (floor cameras)
   Staff detection heuristic
   Re-entry detection
-  â†’ structured events (.jsonl)
-      â”‚
-      â–¼
+  → structured events (.jsonl)
+      │
+      ▼
 [Ingest API]  POST /events/ingest
   Pydantic validation per-event
   Idempotent upsert (event_id PK)
   PostgreSQL storage
-      â”‚
-      â–¼
+      │
+      ▼
 [Analytics API]  GET /stores/{id}/metrics|funnel|heatmap|anomalies
   Real-time SQL aggregations
-  No caching â€” always queries live data
-      â”‚
-      â–¼
+  No caching — always queries live data
+      │
+      ▼
 [Live Dashboard]  /dashboard
   Polls /metrics every 5 seconds
   Updates visitor count, conversion rate, queue depth in real time
