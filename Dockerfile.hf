@@ -11,9 +11,10 @@ COPY . .
 
 RUN mkdir -p /app/data /app/output
 
-ENV PORT=8000
+ENV PORT=7860
+ENV DATABASE_URL=sqlite:///./data/store_intelligence.db
 ENV POS_CSV_PATH=/app/data/pos_transactions.csv
 
-EXPOSE 8000
+EXPOSE 7860
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
