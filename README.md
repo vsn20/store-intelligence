@@ -20,6 +20,11 @@ End-to-end CCTV analytics pipeline. From raw footage to live store metrics.
 - API: FastAPI + SQLAlchemy
 - Storage: SQLite (demo) / PostgreSQL (production)
 - Container: Docker
+## 🌐 Live Demo
 
-## Repository
-github.com/vsn20/store-intelligence
+- **Dashboard:** [Store Intelligence Dashboard](https://vsn20-store-intelligence.hf.space/dashboard/)
+- **API Docs:** [Swagger Documentation](https://vsn20-store-intelligence.hf.space/docs)
+
+## 🔗 Repository
+
+- **GitHub:** [store-intelligence](https://github.com/vsn20/store-intelligence)
