@@ -1,4 +1,4 @@
-# Store Intelligence System — Architecture Design
+﻿# Store Intelligence System â€” Architecture Design
 
 ## Overview
 
@@ -15,32 +15,32 @@ analytics queries.
 
 ```
 CCTV Clips (.mp4)
-      │
-      ▼
+      â”‚
+      â–¼
 [Detection Layer]  detect.py
   YOLOv8m + ByteTrack
-  → per-frame bounding boxes + track_ids
-      │
-      ▼
+  â†’ per-frame bounding boxes + track_ids
+      â”‚
+      â–¼
 [Tracking Layer]  tracker.py
   Direction inference (entry/exit)
   Zone mapping (floor cameras)
   Staff detection heuristic
   Re-entry detection
-  → structured events (.jsonl)
-      │
-      ▼
+  â†’ structured events (.jsonl)
+      â”‚
+      â–¼
 [Ingest API]  POST /events/ingest
   Pydantic validation per-event
   Idempotent upsert (event_id PK)
   PostgreSQL storage
-      │
-      ▼
+      â”‚
+      â–¼
 [Analytics API]  GET /stores/{id}/metrics|funnel|heatmap|anomalies
   Real-time SQL aggregations
-  No caching — always queries live data
-      │
-      ▼
+  No caching â€” always queries live data
+      â”‚
+      â–¼
 [Live Dashboard]  /dashboard
   Polls /metrics every 5 seconds
   Updates visitor count, conversion rate, queue depth in real time
@@ -54,7 +54,7 @@ A single customer entering the store produces the following chain:
 
 1. YOLOv8m detects a person bounding box in frame 90 of CAM 1 (entry camera)
 2. ByteTrack assigns `track_id=7` and maintains it across subsequent frames
-3. `tracker.py` sees the centroid move downward in the frame (top → bottom = entering
+3. `tracker.py` sees the centroid move downward in the frame (top â†’ bottom = entering
    store direction) and emits an `ENTRY` event with a generated `visitor_id=VIS_a0fb3d`
 4. `run.sh` pipes the events into `POST /events/ingest`
 5. The ingest endpoint validates, deduplicates by `event_id`, and stores in PostgreSQL
@@ -104,7 +104,7 @@ If PostgreSQL is unreachable, endpoints return HTTP `503` with a structured body
 {"status": "degraded", "error": "database_unavailable", "detail": "..."}
 ```
 
-This uses `fastapi.responses.JSONResponse` with an explicit `status_code=503` — not
+This uses `fastapi.responses.JSONResponse` with an explicit `status_code=503` â€” not
 Flask-style tuple returns, which are not supported in FastAPI.
 
 ---
@@ -119,7 +119,7 @@ reasons: it handles occlusion by using IoU-based re-identification rather than a
 features, it has no dependency on a separate Re-ID model, and it is built into Ultralytics
 so no separate install is required. I agreed and implemented it. The tradeoff Claude
 acknowledged: ByteTrack loses track identity when two people cross paths, which can cause
-re-entry misdetection. I mitigated this with a 10-minute re-entry window — if the same
+re-entry misdetection. I mitigated this with a 10-minute re-entry window â€” if the same
 `visitor_id` reappears within 10 minutes of an EXIT, it is treated as a REENTRY rather
 than a new ENTRY.
 
@@ -145,7 +145,7 @@ transaction for the same store. When the CSV is present, the POS-correlated
 count is used; when absent (e.g. in test environments), the no-abandon proxy
 is used as a fallback. The funnel response includes a `pos_correlated: true/false`
 field so callers know which method was used. Claude initially did not flag this
-gap — I identified it by reading the problem spec's conversion definition
+gap â€” I identified it by reading the problem spec's conversion definition
 carefully and comparing it against the implementation.
 
 ### 4. Per-event validation in ingest endpoint
@@ -166,7 +166,7 @@ for a production ingest pipeline where partial success is preferable to total fa
 entering simultaneously produce three separate track_ids and three ENTRY events.
 This is correct behaviour.
 
-**Staff exclusion**: `tracker.py` uses a heuristic — if a track spends more than 60% of
+**Staff exclusion**: `tracker.py` uses a heuristic â€” if a track spends more than 60% of
 its lifetime in the top or bottom 15% of the frame (near walls/edges where staff typically
 move), it is flagged `is_staff=True`. All API endpoints filter `is_staff=False` before
 computing customer metrics.
@@ -179,8 +179,8 @@ Re-entry detection has an important architectural constraint: ByteTrack assigns 
 `track_id` after a person leaves and re-enters the camera frame, so linking the two visits
 requires a Re-ID model that associates track IDs by appearance. Without Re-ID, re-entry
 detection only fires when the same `track_id` reappears within one clip session (rare in
-practice). The `test_pipeline.py` suite tests the decision logic directly — see
-`test_reentry_logic_via_state_injection` — and documents this as a known limitation.
+practice). The `test_pipeline.py` suite tests the decision logic directly â€” see
+`test_reentry_logic_via_state_injection` â€” and documents this as a known limitation.
 A production deployment would use OSNet embeddings to match track IDs across gaps.
 
 **Camera overlap**: CAM 1 (entry) and CAM 2 (floor) may detect the same person. Because
@@ -211,7 +211,7 @@ Three anomaly types are implemented in `app/anomalies.py`:
 | `CONVERSION_DROP` | Today's conversion rate is >20% below 7-day average | `WARN` | Review funnel drop-off, check billing staffing |
 
 All anomaly checks exclude `is_staff=True` events. The `CONVERSION_DROP` check requires
-at least one day of historical data before it can fire — if no history exists, no anomaly
+at least one day of historical data before it can fire â€” if no history exists, no anomaly
 is raised (avoids false positives on day one).
 
 ---
@@ -241,7 +241,7 @@ production deployment would require an OSNet Re-ID model or embedding-based matc
 near walls, but may misclassify customers who browse perimeter shelving as staff.
 
 **Conversion rate precision**: The system correlates billing zone presence with POS
-transactions using a 5-minute time window. This is an approximation — a customer who pays
+transactions using a 5-minute time window. This is an approximation â€” a customer who pays
 and leaves quickly may be missed if the billing camera did not capture them.
 
 **Re-entry across track IDs**: As described above, re-entry detection without a Re-ID
@@ -252,3 +252,20 @@ new `track_id`) is not detected.
 (`ingenstion.py` instead of `ingestion.py`). This is preserved intentionally to avoid
 breaking the existing import chain. The import in `main.py` uses the typo'd filename with
 a comment noting the discrepancy.
+---
+
+## Real-time Streaming — SSE + Replay
+
+### SSE Endpoint (app/stream.py)
+Adds GET /stores/{id}/stream — Server-Sent Events endpoint polling DB every second for new events and pushing to connected clients. Heartbeat every 5s keeps connection alive through proxies.
+
+### Replay Script (pipeline/replay.py)
+Replays events.jsonl with real-time gaps between events. Posts each event individually to prove the pipeline is genuinely live — not batch-processed. Configurable speed multiplier (--speed 3.0 = 3x faster).
+
+### Dashboard Upgrade
+- Funnel bar chart (Chart.js) with drop-off percentages
+- Queue depth over time line chart — updates live from SSE
+- Zone heatmap with proportional bars
+- Live event list colour-coded by event type
+- SSE status badge showing connection state
+

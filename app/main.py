@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from app.database import init_db
 import os
 
+
 logging.basicConfig(
     level=logging.INFO,
     format='{"time":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","message":"%(message)s"%(extra_fields)s}',
@@ -146,6 +147,8 @@ if os.path.exists(dashboard_path):
         name="dashboard",
     )
 
+from app import stream
+app.include_router(stream.router)
 
 @app.get("/")
 def root():
